@@ -18,6 +18,8 @@ require 'socket'
 #   statsd = Dogstatsd.new 'localhost', 8125, :tags => 'tag1:true'
 class Dogstatsd
 
+  VERSION = '2.0.0'
+
   DEFAULT_HOST = '127.0.0.1'
   DEFAULT_PORT = 8125
 
@@ -372,3 +374,4 @@ class Dogstatsd
     nil
   end
 end
+
