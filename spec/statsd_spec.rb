@@ -1,14 +1,14 @@
 require 'helper'
 require 'timecop'
 
-describe Statsd do
-  class Statsd
+describe Dogstatsd do
+  class Dogstatsd
     # we need to stub this
     attr_accessor :socket
   end
 
   before do
-    @statsd = Statsd.new('localhost', 1234)
+    @statsd = Dogstatsd.new('localhost', 1234)
     @statsd.socket = FakeUDPSocket.new
   end
 
@@ -21,7 +21,7 @@ describe Statsd do
     end
 
     it "should default the host to 127.0.0.1, port to 8125, namespace to nil, and tags to []" do
-      statsd = Statsd.new
+      statsd = Dogstatsd.new
       statsd.host.must_equal '127.0.0.1'
       statsd.port.must_equal 8125
       statsd.namespace.must_equal nil
@@ -29,7 +29,7 @@ describe Statsd do
     end
 
     it 'should be able to set host, port, namespace, and global tags' do
-      statsd = Statsd.new '1.3.3.7', 8126, :tags => %w(global), :namespace => 'space'
+      statsd = Dogstatsd.new '1.3.3.7', 8126, :tags => %w(global), :namespace => 'space'
       statsd.host.must_equal '1.3.3.7'
       statsd.port.must_equal 8126
       statsd.namespace.must_equal 'space'
@@ -270,18 +270,18 @@ describe Statsd do
 
   describe "with logging" do
     require 'stringio'
-    before { Statsd.logger = Logger.new(@log = StringIO.new)}
+    before { Dogstatsd.logger = Logger.new(@log = StringIO.new)}
 
     it "should write to the log in debug" do
-      Statsd.logger.level = Logger::DEBUG
+      Dogstatsd.logger.level = Logger::DEBUG
 
       @statsd.increment('foobar')
 
-      @log.string.must_match "Statsd: foobar:1|c"
+      @log.string.must_match "Dogstatsd: foobar:1|c"
     end
 
     it "should not write to the log unless debug" do
-      Statsd.logger.level = Logger::INFO
+      Dogstatsd.logger.level = Logger::INFO
 
       @statsd.increment('foobar')
 
@@ -295,10 +295,10 @@ describe Statsd do
     end
 
     it "should replace ruby constant delimeter with graphite package name" do
-      class Statsd::SomeClass; end
-      @statsd.increment(Statsd::SomeClass, :sample_rate=>1)
+      class Dogstatsd::SomeClass; end
+      @statsd.increment(Dogstatsd::SomeClass, :sample_rate=>1)
 
-      @statsd.socket.recv.must_equal ['Statsd.SomeClass:1|c']
+      @statsd.socket.recv.must_equal ['Dogstatsd.SomeClass:1|c']
     end
 
     it "should replace statsd reserved chars in the stat name" do
@@ -310,7 +310,7 @@ describe Statsd do
   describe "handling socket errors" do
     before do
       require 'stringio'
-      Statsd.logger = Logger.new(@log = StringIO.new)
+      Dogstatsd.logger = Logger.new(@log = StringIO.new)
       @statsd.socket.instance_eval { def send(*) raise SocketError end }
     end
 
@@ -320,7 +320,7 @@ describe Statsd do
 
     it "should log socket errors" do
       @statsd.increment('foobar')
-      @log.string.must_match 'Statsd: SocketError'
+      @log.string.must_match 'Dogstatsd: SocketError'
     end
   end
 
@@ -549,14 +549,14 @@ describe Statsd do
   end
 end
 
-describe Statsd do
+describe Dogstatsd do
   describe "with a real UDP socket" do
     it "should actually send stuff over the socket" do
       socket = UDPSocket.new
       host, port = 'localhost', 12345
       socket.bind(host, port)
 
-      statsd = Statsd.new(host, port)
+      statsd = Dogstatsd.new(host, port)
       statsd.increment('foobar')
       message = socket.recvfrom(16).first
       message.must_equal 'foobar:1|c'

@@ -1,10 +1,10 @@
 require 'socket'
 
-# = Statsd: A DogStatsd client (https://www.datadoghq.com)
+# = Dogstatsd: A Dogstatsd client (https://www.datadoghq.com)
 #
-# @example Set up a global Statsd client for a server on localhost:8125
-#   require 'statsd'
-#   $statsd = Statsd.new 'localhost', 8125
+# @example Set up a global Dogstatsd client for a server on localhost:8125
+#   require 'dogstatsd'
+#   $statsd = Dogstatsd.new 'localhost', 8125
 # @example Send some stats
 #   $statsd.increment 'page.views'
 #   $statsd.timing 'page.load', 320
@@ -12,11 +12,11 @@ require 'socket'
 # @example Use {#time} to time the execution of a block
 #   $statsd.time('account.activate') { @account.activate! }
 # @example Create a namespaced statsd client and increment 'account.activate'
-#   statsd = Statsd.new 'localhost', 8125, :namespace => 'account'
+#   statsd = Dogstatsd.new 'localhost', 8125, :namespace => 'account'
 #   statsd.increment 'activate'
 # @example Create a statsd client with global tags
-#   statsd = Statsd.new 'localhost', 8125, :tags => 'tag1:true'
-class Statsd
+#   statsd = Dogstatsd.new 'localhost', 8125, :tags => 'tag1:true'
+class Dogstatsd
 
   DEFAULT_HOST = '127.0.0.1'
   DEFAULT_PORT = 8125
@@ -65,11 +65,6 @@ class Statsd
   class << self
     # Set to a standard logger instance to enable debug logging.
     attr_accessor :logger
-  end
-
-  # Return the current version of the library.
-  def self.VERSION
-    "1.5.0"
   end
 
   # @param [String] host your statsd host
@@ -227,7 +222,7 @@ class Statsd
     # @option opts [Array<String>, nil] :tags (nil) An array of tags
     # @option opts [String, nil] :message (nil) A message to associate with this service check status
   # @example Report a critical service check status
-  #   $statsd.service_check('my.service.check', Statsd::CRITICAL, :tags=>['urgent'])
+  #   $statsd.service_check('my.service.check', Dogstatsd::CRITICAL, :tags=>['urgent'])
   def service_check(name, status, opts={})
     service_check_string = format_service_check(name, status, opts)
     send_to_socket service_check_string
@@ -370,10 +365,10 @@ class Statsd
   end
 
   def send_to_socket(message)
-    self.class.logger.debug { "Statsd: #{message}" } if self.class.logger
+    self.class.logger.debug { "Dogstatsd: #{message}" } if self.class.logger
     @socket.send(message, 0, @host, @port)
   rescue => boom
-    self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
+    self.class.logger.error { "Dogstatsd: #{boom.class} #{boom}" } if self.class.logger
     nil
   end
 end
