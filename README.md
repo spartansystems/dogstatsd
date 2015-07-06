@@ -1,6 +1,6 @@
 
-dogstatsd-ruby
-==============
+dogstatsd
+=========
 
 A client for DogStatsD, an extension of the StatsD metric server for Datadog.
 
@@ -11,16 +11,16 @@ Quick Start Guide
 
 First install the library:
 
-    gem install dogstatsd-ruby
+    gem install dogstatsd
 
 Then start instrumenting your code:
 
 ``` ruby
 # Load the dogstats module.
-require 'statsd'
+require 'dogstatsd'
 
 # Create a stats instance.
-statsd = Statsd.new('localhost', 8125)
+statsd = Dogstatsd.new('localhost', 8125)
 
 # Increment a counter.
 statsd.increment('page.views')
